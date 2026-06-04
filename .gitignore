@@ -72,3 +72,4 @@ instance/
 .claude/
 .claudeignore
 .claude.json
+CLAUDE.md
