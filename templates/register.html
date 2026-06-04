@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ 'rtl' if lang == 'ar' else 'ltr' }}">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SINA — {% if lang=='fr' %}Inscription{% elif lang=='en' %}Register{% else %}إنشاء حساب{% endif %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+</head>
+<body>
+<div class="app-shell">
+<div class="phone-frame">
+
+  <!-- Language bar -->
+  <div class="lang-bar">
+    <button class="lang-btn{% if lang=='fr' %} active{% endif %}" onclick="switchLang('fr')">FR</button>
+    <button class="lang-btn{% if lang=='en' %} active{% endif %}" onclick="switchLang('en')">EN</button>
+    <button class="lang-btn{% if lang=='ar' %} active{% endif %}" onclick="switchLang('ar')">AR</button>
+  </div>
+
+  <!-- Header -->
+  <header class="va-header" style="justify-content:center;">
+    <div class="header-title">
+      <div class="bot-indicator"></div>
+      <span>SINA — {% if lang=='fr' %}Inscription{% elif lang=='en' %}Register{% else %}تسجيل{% endif %}</span>
+    </div>
+  </header>
+
+  <!-- Status -->
+  <div class="va-status-label active">
+    <span id="statusText">{{ ui.reg_say_username }}</span>
+  </div>
+
+  <!-- Orb -->
+  <div class="orb-container" id="orbContainer">
+    <div class="wave-ring wave-ring-1"></div>
+    <div class="wave-ring wave-ring-2"></div>
+    <div class="wave-ring wave-ring-3"></div>
+    <div class="orb" id="mainOrb">
+      <div class="orb-inner">
+        <div class="orb-core"></div>
+        <div class="orb-highlight"></div>
+        <div class="orb-reflection"></div>
+        <div class="orb-shimmer"></div>
+      </div>
+      <div class="orb-freq">
+        {% for i in range(12) %}<div class="freq-bar" style="--i:{{ i }}"></div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Family code display (shown after registration) -->
+  <div class="family-code-box" id="familyCodeBox" style="display:none;">
+    <p class="family-code-label">
+      {% if lang=='fr' %}Code famille{% elif lang=='en' %}Family code{% else %}رمز العائلة{% endif %}
+    </p>
+    <p class="family-code-value" id="familyCodeValue"></p>
+    <p class="family-code-hint">
+      {% if lang=='fr' %}Partagez ce code avec votre famille.
+      {% elif lang=='en' %}Share this code with your family.
+      {% else %}شارك هذا الرمز مع عائلتك.{% endif %}
+    </p>
+  </div>
+
+  <!-- Transcript -->
+  <div class="transcript-area">
+    <p class="transcript-user" id="transcriptUser"></p>
+    <div class="transcript-response" id="transcriptResponse"></div>
+  </div>
+
+  <!-- Mic -->
+  <button class="mic-btn" id="micBtn" aria-label="Start voice input">
+    <div class="mic-btn-ring"></div>
+    <div class="mic-btn-inner">
+      <svg class="icon-mic" width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <rect x="9" y="3" width="8" height="13" rx="4" fill="white"/>
+        <path d="M5 13a8 8 0 0016 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="13" y1="21" x2="13" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="9" y1="24" x2="17" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="mic-pulse-ring"></div>
+  </button>
+
+  <!-- Nav -->
+  <div class="auth-nav">
+    <a href="/login?lang={{ lang }}">
+      {% if lang=='fr' %}Déjà un compte ? Se connecter
+      {% elif lang=='en' %}Already have an account? Login
+      {% else %}لديك حساب؟ تسجيل الدخول{% endif %}
+    </a>
+  </div>
+
+  <!-- ═══ Assisted Input Panel ═══ -->
+  <div class="assisted-panel" id="assistedPanel" style="display:none;" role="dialog">
+    <div class="assisted-header">
+      <span>{% if lang=='fr' %}Saisie assistée{% elif lang=='en' %}Assisted Input{% else %}إدخال مساعد{% endif %}</span>
+      <button class="assisted-close" onclick="hideAssisted()" aria-label="Close">✕</button>
+    </div>
+    <div class="assisted-body">
+      <p class="assisted-hint">
+        {% if lang=='fr' %}Demandez à quelqu'un de remplir ce formulaire. Les données seront lues à voix haute avant confirmation.
+        {% elif lang=='en' %}Ask someone nearby to fill this form. Data will be read aloud before confirming.
+        {% else %}اطلب من شخص قريب ملء هذا النموذج. ستُقرأ البيانات بصوت عالٍ قبل التأكيد.{% endif %}
+      </p>
+      <input type="text"     class="assisted-input" id="assistedUsername"
+             placeholder="{% if lang=='fr' %}Nom d'utilisateur{% elif lang=='en' %}Username{% else %}اسم المستخدم{% endif %}"
+             autocomplete="off" autocapitalize="none" spellcheck="false"/>
+      <input type="email"    class="assisted-input" id="assistedEmail"
+             placeholder="{% if lang=='fr' %}Email (optionnel){% elif lang=='en' %}Email (optional){% else %}البريد الإلكتروني (اختياري){% endif %}"
+             autocomplete="off"/>
+      <button class="assisted-submit" onclick="submitAssisted()">
+        {% if lang=='fr' %}Vérifier et lire à voix haute
+        {% elif lang=='en' %}Verify and read aloud
+        {% else %}تحقق واقرأ بصوت عالٍ{% endif %}
+      </button>
+      <p class="assisted-readback" id="assistedReadback" style="display:none;"></p>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  const SINA_LANG   = '{{ lang }}';
+  const SINA_UI     = {{ ui | tojson }};
+  const SINA_UI_ALL = {{ ui_all | safe }};
+  const SINA_PAGE   = 'register';
+</script>
+<script src="/static/js/recorder.js"></script>
+<script src="/static/js/auth.js"></script>
+</body>
+</html>

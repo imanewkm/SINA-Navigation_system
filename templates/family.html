@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SINA — Suivi famille</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.5.3/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0612; --card: #1a1030;
+      --purple: #8b5cf6; --pink: #e879f9;
+      --text: #f0eaff; --muted: rgba(240,234,255,.55);
+      --border: rgba(139,92,246,.25);
+    }
+    body { font-family:'Outfit',sans-serif; background:radial-gradient(ellipse 80% 80% at 50% 0%,#1e0a38,#0a0612 60%); min-height:100vh; color:var(--text); display:flex; flex-direction:column; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:18px 28px; border-bottom:1px solid var(--border); background:rgba(10,6,18,.7); backdrop-filter:blur(8px); }
+    .logo { display:flex; align-items:center; gap:10px; font-size:20px; font-weight:600; }
+    .dot { width:12px; height:12px; border-radius:50%; background:#4ade80; box-shadow:0 0 10px rgba(74,222,128,.8); animation:blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .layout { display:flex; flex:1; }
+    #map { flex:1; min-height:60vh; z-index:1; }
+    .sidebar { width:360px; flex-shrink:0; display:flex; flex-direction:column; gap:16px; padding:24px; background:rgba(26,16,48,.6); border-left:1px solid var(--border); overflow-y:auto; max-height:calc(100vh - 70px); }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 20px; }
+    .card-title { font-size:13px; font-weight:600; letter-spacing:.08em; color:var(--pink); text-transform:uppercase; margin-bottom:14px; }
+    .status-row { display:flex; align-items:center; gap:12px; font-size:15px; margin-bottom:8px; }
+    .sdot { width:10px; height:10px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px rgba(74,222,128,.8); flex-shrink:0; }
+    .sdot.off { background:#6b7280; box-shadow:none; }
+    #gpsText { font-size:14px; line-height:1.6; margin-top:12px; color:var(--text); }
+    #lastUpdate { font-size:12px; color:var(--muted); margin-top:8px; }
+    .system-status { font-size:13px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+    .status-item { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .alert-list { display:flex; flex-direction:column; gap:10px; max-height:300px; overflow-y:auto; }
+    .alert-item { background:rgba(232,121,249,.08); border:1px solid rgba(232,121,249,.25); border-radius:10px; padding:12px 14px; }
+    .alert-msg  { color:#f0abfc; font-weight:500; font-size:14px; }
+    .alert-time { color:var(--muted); font-size:12px; margin-top:4px; }
+    .empty { color:var(--muted); font-size:14px; }
+    #qrcode { margin:16px auto; padding:12px; background:white; border-radius:8px; }
+    .url-sharing { text-align:center; margin-top:12px; }
+    .family-url { font-size:12px; color:var(--purple); word-break:break-all; margin-top:8px; }
+    .sos-flash { position:fixed; inset:0; background:rgba(220,38,38,.15); pointer-events:none; opacity:0; z-index:9999; }
+    .sos-flash.active { animation:flash .6s ease-out 3; }
+    @keyframes flash { 0%,100%{opacity:0} 50%{opacity:1} }
+    @media (max-width:700px) { .layout{flex-direction:column} .sidebar{width:100%;border-left:none;border-top:1px solid var(--border);max-height:none} }
+  </style>
+</head>
+<body>
+<div class="sos-flash" id="sosFlash"></div>
+<header>
+  <div class="logo"><div class="dot"></div><span>SINA — Suivi famille</span></div>
+  <div style="font-size:13px;color:var(--muted)">Mise à jour en temps réel</div>
+</header>
+<div class="layout">
+  <div id="map"></div>
+  <div class="sidebar">
+    <div class="card">
+      <div class="card-title">Position en direct</div>
+      <div class="status-row">
+        <div class="sdot off" id="sdot"></div>
+        <span id="statusLbl">En attente…</span>
+      </div>
+      <div id="gpsText"></div>
+      <div id="lastUpdate"></div>
+      <div class="system-status">
+        <div class="card-title" style="margin-bottom:8px;color:var(--muted)">Système</div>
+        <div class="status-item">
+          <span style="font-size:12px">Caméra:</span>
+          <span id="cameraStatus" style="color:var(--muted)">—</span>
+        </div>
+        <div class="status-item">
+          <span style="font-size:12px">Localisation:</span>
+          <span id="gpsStatus" style="color:var(--muted)">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Alertes récentes</div>
+      <div class="alert-list" id="alertList"><p class="empty">Aucune alerte pour le moment.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Partager l'accès</div>
+      <div id="qrcode" style="display:flex;justify-content:center;"></div>
+      <div class="url-sharing">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">URL de suivi:</div>
+        <div class="family-url" id="familyUrl"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  const familyUrl = window.location.href;
+  document.getElementById('familyUrl').textContent = familyUrl;
+
+  // Generate QR code for easy sharing
+  try {
+    const qrDiv = document.getElementById('qrcode');
+    new QRCode(qrDiv, {
+      text: familyUrl,
+      width: 160,
+      height: 160,
+      colorDark: '#8b5cf6',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch (e) {
+    console.warn('[QR] Could not generate QR code:', e);
+  }
+
+  const map    = L.map('map').setView([33.57, -7.59], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>'
+  }).addTo(map);
+
+  const marker = L.marker([33.57, -7.59], {
+    icon: L.divIcon({
+      className: '',
+      html: `<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#e879f9);border:3px solid white;box-shadow:0 0 16px rgba(139,92,246,.7);display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>`,
+      iconSize: [42, 42], iconAnchor: [21, 21],
+    })
+  }).addTo(map);
+
+  function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'fr-FR';
+    window.speechSynthesis.speak(u);
+  }
+
+  const alertList = document.getElementById('alertList');
+  const alerts    = [];
+
+  function addAlert(msg) {
+    alerts.unshift({ msg, ts: new Date() });
+    if (alerts.length > 20) alerts.pop();
+    alertList.innerHTML = alerts.map(a => `
+      <div class="alert-item">
+        <div class="alert-msg">🚨 ${a.msg}</div>
+        <div class="alert-time">${a.ts.toLocaleTimeString()}</div>
+      </div>`).join('');
+    const f = document.getElementById('sosFlash');
+    f.classList.remove('active');
+    void f.offsetWidth;
+    f.classList.add('active');
+    speak('Alerte ! ' + msg);
+  }
+
+  function updateGPS(lat, lng, ts) {
+    marker.setLatLng([lat, lng]);
+    map.panTo([lat, lng]);
+    document.getElementById('sdot').classList.remove('off');
+    document.getElementById('statusLbl').textContent = 'En ligne';
+    document.getElementById('gpsText').textContent =
+      `Lat: ${lat.toFixed(5)}\nLng: ${lng.toFixed(5)}`;
+    const age = Math.round(Date.now() / 1000 - (ts || Date.now() / 1000));
+    document.getElementById('lastUpdate').textContent =
+      age < 5 ? 'À l\'instant' : `Il y a ${age} s`;
+  }
+
+  // Update system status periodically
+  function updateSystemStatus() {
+    fetch('/api/status?lang=fr')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('cameraStatus').textContent = d.camera_running ? 'Activée' : 'Désactivée';
+        document.getElementById('cameraStatus').style.color = d.camera_running ? '#4ade80' : 'var(--muted)';
+        document.getElementById('gpsStatus').textContent = d.gps_enabled ? 'Activée' : 'Désactivée';
+        document.getElementById('gpsStatus').style.color = d.gps_enabled ? '#4ade80' : 'var(--muted)';
+      })
+      .catch(e => console.warn('[Status] Error:', e));
+  }
+
+  // Check status on load and periodically
+  updateSystemStatus();
+  setInterval(updateSystemStatus, 10000);
+
+  // SSE — real-time GPS and alert updates
+  const es = new EventSource('/family-events');
+  es.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.type === 'gps')   updateGPS(d.lat, d.lng, d.ts);
+    if (d.type === 'alert') addAlert(d.message);
+  };
+  es.onerror = () => {
+    document.getElementById('sdot').classList.add('off');
+    document.getElementById('statusLbl').textContent = 'Connexion perdue…';
+  };
+})();
+</script>
+</body>
+</html>

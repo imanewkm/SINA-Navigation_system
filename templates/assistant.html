@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" id="htmlRoot">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>SINA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+</head>
+<body>
+<div class="app-shell">
+<div class="phone-frame">
+
+  <!-- Header -->
+  <header class="va-header">
+    <div class="header-title">
+      <div class="bot-indicator"></div>
+      <span id="headerTitle">SINA Assistant</span>
+    </div>
+    <button class="btn-icon" id="btnCamera" onclick="toggleCamera()" aria-label="Toggle camera" title="Camera">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M23 7l-7 5 7 5V7z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="1" y="5" width="15" height="14" rx="2" stroke="white" stroke-width="2"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Orb + Status Container (kept together) -->
+  <div class="orb-status-wrapper">
+    <!-- Orb -->
+    <div class="orb-container" id="orbContainer">
+      <div class="wave-ring wave-ring-1"></div>
+      <div class="wave-ring wave-ring-2"></div>
+      <div class="wave-ring wave-ring-3"></div>
+      <div class="orb" id="mainOrb">
+        <div class="orb-inner">
+          <div class="orb-core"></div>
+          <div class="orb-highlight"></div>
+          <div class="orb-reflection"></div>
+          <div class="orb-shimmer"></div>
+        </div>
+        <div class="orb-freq">
+          {% for i in range(12) %}<div class="freq-bar" style="--i:{{ i }}"></div>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Status (stays under orb) -->
+    <div class="va-status-label active">
+      <span id="statusText">…</span>
+    </div>
+  </div>
+
+  <!-- Camera feed -->
+  <div id="cameraSection" style="display:none; padding: 0 16px 8px;">
+    <img id="cameraFeed" src="" alt="Camera"
+         style="width:100%; border-radius:12px; border:1px solid rgba(139,92,246,0.3);"/>
+  </div>
+
+  <!-- Detection banner -->
+  <div class="detection-banner" id="detectionBanner" style="display:none;">
+    <span id="detectionText"></span>
+  </div>
+
+  <!-- Transcript -->
+  <div class="transcript-area">
+    <p class="transcript-user"     id="transcriptUser"></p>
+    <div class="transcript-response" id="transcriptResponse"></div>
+  </div>
+
+  <!-- Bottom controls -->
+  <div class="bottom-controls">
+    <button class="sos-btn" onclick="triggerSOS()" aria-label="SOS">
+      <span>SOS</span>
+    </button>
+    <button class="mic-btn" id="micBtn" aria-label="Mic">
+      <div class="mic-btn-ring"></div>
+      <div class="mic-btn-inner">
+        <svg class="icon-mic" width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="9" y="3" width="8" height="13" rx="4" fill="white"/>
+          <path d="M5 13a8 8 0 0016 0" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="13" y1="21" x2="13" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="9" y1="24" x2="17" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon-stop" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none;">
+          <rect x="6" y="6" width="12" height="12" rx="2" fill="white"/>
+        </svg>
+      </div>
+      <div class="mic-pulse-ring"></div>
+    </button>
+    <button class="code-btn" onclick="openSettings()" aria-label="Settings" title="Settings">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="5" cy="12" r="3" stroke="white" stroke-width="2"/>
+        <line x1="1" y1="12" x2="2" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="8" y1="12" x2="24" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="14" cy="5" r="3" stroke="white" stroke-width="2"/>
+        <line x1="1" y1="5" x2="11" y2="5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="17" y1="5" x2="24" y2="5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="18" cy="19" r="3" stroke="white" stroke-width="2"/>
+        <line x1="1" y1="19" x2="15" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="21" y1="19" x2="24" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <button class="code-btn" onclick="openFamily()" aria-label="Family map" title="Family map">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="9" cy="7" r="4" stroke="white" stroke-width="2"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+</div><!-- phone-frame -->
+</div><!-- app-shell -->
+
+<script>
+  const SINA_UI_ALL = {{ ui_all | safe }};
+</script>
+<script src="/static/js/recorder.js"></script>
+<script src="/static/js/assistant.js"></script>
+</body>
+</html>

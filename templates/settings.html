@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" id="settingsRoot">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>SINA Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+    }
+    body {
+      background: linear-gradient(135deg, rgba(10,6,18,0.95) 0%, rgba(40,25,70,0.8) 100%);
+      min-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      font-family: Outfit, sans-serif;
+      color: #f0eaff;
+    }
+    .settings-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      gap: 20px;
+    }
+    .settings-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0;
+      flex: 1;
+    }
+    .btn-back {
+      background: rgba(232, 121, 249, 0.15);
+      border: 1px solid rgba(232, 121, 249, 0.3);
+      color: #e879f9;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: Outfit, sans-serif;
+      font-size: 14px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-back:hover {
+      background: rgba(232, 121, 249, 0.25);
+    }
+    .setting-group {
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .setting-label {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .setting-sublabel {
+      font-size: 12px;
+      color: rgba(240, 234, 255, 0.6);
+      margin-top: 4px;
+    }
+    .language-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .lang-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid rgba(232, 121, 249, 0.3);
+      background: rgba(232, 121, 249, 0.05);
+      color: #f0eaff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-family: Outfit, sans-serif;
+    }
+    .lang-btn:hover {
+      background: rgba(232, 121, 249, 0.15);
+    }
+    .lang-btn.active {
+      background: rgba(232, 121, 249, 0.3);
+      border-color: rgba(232, 121, 249, 0.6);
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(139, 92, 246, 0.3);
+      outline: none;
+      accent-color: #e879f9;
+    }
+    .slider-value {
+      display: inline-block;
+      float: right;
+      background: rgba(232, 121, 249, 0.2);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .toggle-button {
+      padding: 12px 20px;
+      border: 2px solid rgba(232, 121, 249, 0.3);
+      background: rgba(232, 121, 249, 0.05);
+      color: #f0eaff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      font-family: Outfit, sans-serif;
+      transition: all 0.2s;
+      width: 100%;
+      text-align: left;
+    }
+    .toggle-button:hover {
+      background: rgba(232, 121, 249, 0.15);
+    }
+    .toggle-button.enabled {
+      background: rgba(76, 175, 80, 0.2);
+      border-color: rgba(76, 175, 80, 0.4);
+      color: #4caf50;
+    }
+    .toggle-button.enabled::after {
+      content: ' ✓';
+      float: right;
+    }
+    .setting-info {
+      font-size: 12px;
+      color: rgba(240, 234, 255, 0.5);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 479px) {
+      .settings-container {
+        padding: 12px;
+        min-height: 100vh;
+      }
+      .settings-header {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 20px;
+        gap: 10px;
+      }
+      .settings-header h1 {
+        font-size: 20px;
+        text-align: center;
+      }
+      .btn-back {
+        width: 100%;
+        text-align: center;
+      }
+      .setting-group {
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .setting-label {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .language-buttons {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .lang-btn {
+        padding: 10px;
+        font-size: 13px;
+      }
+    }
+    @media (min-width: 480px) and (max-width: 767px) {
+      .settings-container {
+        padding: 16px;
+        max-width: 500px;
+      }
+    }
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .settings-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .btn-back {
+      background: rgba(232, 121, 249, 0.15);
+      border: 1px solid rgba(232, 121, 249, 0.3);
+      color: #e879f9;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: Outfit, sans-serif;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn-back:hover {
+      background: rgba(232, 121, 249, 0.25);
+    }
+    .setting-group {
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .setting-label {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .setting-sublabel {
+      font-size: 12px;
+      color: rgba(240, 234, 255, 0.6);
+      margin-top: 4px;
+    }
+    .language-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .lang-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid rgba(232, 121, 249, 0.3);
+      background: rgba(232, 121, 249, 0.05);
+      color: #f0eaff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-family: Outfit, sans-serif;
+    }
+    .lang-btn:hover {
+      background: rgba(232, 121, 249, 0.15);
+    }
+    .lang-btn.active {
+      background: rgba(232, 121, 249, 0.3);
+      border-color: rgba(232, 121, 249, 0.6);
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(139, 92, 246, 0.3);
+      outline: none;
+      -webkit-appearance: none;
+      accent-color: #e879f9;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e879f9;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e879f9;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .slider-value {
+      display: inline-block;
+      float: right;
+      background: rgba(232, 121, 249, 0.2);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .toggle-button {
+      padding: 12px 20px;
+      border: 2px solid rgba(232, 121, 249, 0.3);
+      background: rgba(232, 121, 249, 0.05);
+      color: #f0eaff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      font-family: Outfit, sans-serif;
+      transition: all 0.2s;
+      width: 100%;
+      text-align: left;
+    }
+    .toggle-button:hover {
+      background: rgba(232, 121, 249, 0.15);
+    }
+    .toggle-button.enabled {
+      background: rgba(76, 175, 80, 0.2);
+      border-color: rgba(76, 175, 80, 0.4);
+      color: #4caf50;
+    }
+    .toggle-button.enabled::after {
+      content: ' ✓';
+      float: right;
+    }
+    .setting-info {
+      font-size: 12px;
+      color: rgba(240, 234, 255, 0.5);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+<div class="settings-container">
+  <div class="settings-header">
+    <h1>⚙️ Settings</h1>
+    <button class="btn-back" onclick="window.history.back()">Back</button>
+  </div>
+
+  <!-- Language Setting -->
+  <div class="setting-group">
+    <label class="setting-label">Language / Langue / اللغة</label>
+    <div class="language-buttons">
+      <button class="lang-btn active" id="btnLangFr" onclick="setSetting('lang', 'fr')">Français</button>
+      <button class="lang-btn" id="btnLangEn" onclick="setSetting('lang', 'en')">English</button>
+      <button class="lang-btn" id="btnLangAr" onclick="setSetting('lang', 'ar')">العربية</button>
+    </div>
+    <div class="setting-sublabel">Auto-detected on each command. Click to force language.</div>
+  </div>
+
+  <!-- Speech Rate Setting -->
+  <div class="setting-group">
+    <label class="setting-label">
+      Speech Speed
+      <span class="slider-value" id="speedValue">Normal</span>
+    </label>
+    <input type="range" id="speechRate" min="0.7" max="1.3" step="0.1" value="0.95"
+           onchange="setSetting('speechRate', this.value)">
+    <div class="setting-sublabel">Adjust how fast SINA speaks to you</div>
+  </div>
+
+  <!-- Volume Setting -->
+  <div class="setting-group">
+    <label class="setting-label">
+      Volume
+      <span class="slider-value" id="volumeValue">100%</span>
+    </label>
+    <input type="range" id="volume" min="0" max="1" step="0.1" value="1"
+           onchange="setSetting('volume', this.value)">
+    <div class="setting-sublabel">Control speaker volume for SINA's voice</div>
+  </div>
+
+  <!-- Sound Effects Setting -->
+  <div class="setting-group">
+    <label class="setting-label">Sound Effects</label>
+    <button class="toggle-button enabled" id="btnSfx" onclick="setSetting('soundEffects', !getSetting('soundEffects', true))">
+      Beeps & tones
+    </button>
+    <div class="setting-sublabel">Enable confirmation sounds when listening/speaking</div>
+  </div>
+
+  <!-- Detection Sensitivity Setting -->
+  <div class="setting-group">
+    <label class="setting-label">
+      Detection Sensitivity
+      <span class="slider-value" id="sensitivityValue">Medium</span>
+    </label>
+    <input type="range" id="sensitivity" min="1" max="3" step="1" value="2"
+           onchange="setSetting('detectionSensitivity', this.value)">
+    <div class="setting-sublabel">
+      1=Quiet environments, 2=Normal, 3=Noisy environments
+    </div>
+  </div>
+
+  <!-- GPS Setting -->
+  <div class="setting-group">
+    <label class="setting-label">Location Services (GPS)</label>
+    <button class="toggle-button" id="btnGPS" onclick="setSetting('gpsEnabled', !getSetting('gpsEnabled', false))">
+      Location sharing
+    </button>
+    <div class="setting-sublabel">Share location only when sending SOS alert to family</div>
+  </div>
+
+  <!-- Camera Auto-Start -->
+  <div class="setting-group">
+    <label class="setting-label">Camera Auto-Start</label>
+    <button class="toggle-button" id="btnAutoCamera" onclick="setSetting('autoCamera', !getSetting('autoCamera', false))">
+      Auto-activate camera
+    </button>
+    <div class="setting-sublabel">Automatically turn on camera when app starts</div>
+  </div>
+
+  <!-- About Section -->
+  <div class="setting-group" style="opacity: 0.7;">
+    <label class="setting-label">About</label>
+    <div class="setting-info">
+      <strong>SINA v1.0</strong><br>
+      Your voice-guided mobility assistant<br><br>
+      For visually impaired users<br>
+      Real-time obstacle detection with voice feedback<br>
+      Family emergency alerts
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Settings utility functions
+  function getSetting(key, defaultValue) {
+    const stored = localStorage.getItem('sina_' + key);
+    if (stored === null) return defaultValue;
+    if (defaultValue === true || defaultValue === false) {
+      return stored === 'true';
+    }
+    return stored;
+  }
+
+  function setSetting(key, value) {
+    localStorage.setItem('sina_' + key, String(value));
+    updateUI();
+    if (key === 'lang') {
+      location.reload(); // Reload to change language
+    }
+  }
+
+  function updateUI() {
+    // Language buttons
+    const lang = getSetting('lang', 'fr');
+    document.getElementById('btnLangFr').classList.toggle('active', lang === 'fr');
+    document.getElementById('btnLangEn').classList.toggle('active', lang === 'en');
+    document.getElementById('btnLangAr').classList.toggle('active', lang === 'ar');
+
+    // Speech rate
+    const speechRate = parseFloat(getSetting('speechRate', '0.95'));
+    document.getElementById('speechRate').value = speechRate;
+    const speedLabels = {0.7: 'Slow', 0.85: 'Slow', 0.95: 'Normal', 1.1: 'Fast', 1.3: 'Very Fast'};
+    document.getElementById('speedValue').textContent = speedLabels[speechRate.toFixed(1)] || 'Normal';
+
+    // Volume
+    const volume = parseFloat(getSetting('volume', '1'));
+    document.getElementById('volume').value = volume;
+    document.getElementById('volumeValue').textContent = Math.round(volume * 100) + '%';
+
+    // Sound effects
+    const sfx = getSetting('soundEffects', true);
+    document.getElementById('btnSfx').classList.toggle('enabled', sfx);
+
+    // Detection sensitivity
+    const sensitivity = parseInt(getSetting('detectionSensitivity', '2'));
+    document.getElementById('sensitivity').value = sensitivity;
+    const sensLabels = {1: 'Quiet', 2: 'Medium', 3: 'Noisy'};
+    document.getElementById('sensitivityValue').textContent = sensLabels[sensitivity];
+
+    // GPS
+    const gps = getSetting('gpsEnabled', false);
+    document.getElementById('btnGPS').classList.toggle('enabled', gps);
+
+    // Auto camera
+    const autoCamera = getSetting('autoCamera', false);
+    document.getElementById('btnAutoCamera').classList.toggle('enabled', autoCamera);
+  }
+
+  // Set page language on load
+  const lang = getSetting('lang', 'fr');
+  document.getElementById('settingsRoot').setAttribute('lang', lang);
+  document.getElementById('settingsRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+
+  // Initialize UI
+  updateUI();
+</script>
+</body>
+</html>
